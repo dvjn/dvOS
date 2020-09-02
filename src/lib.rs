@@ -11,6 +11,9 @@ use core::panic::PanicInfo;
 pub mod serial;
 pub mod vga_buffer;
 
+pub use vga_buffer::Color;
+pub use vga_buffer::ColorCode;
+
 pub trait Testable {
     fn run(&self) -> ();
 }

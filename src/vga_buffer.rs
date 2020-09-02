@@ -22,10 +22,10 @@ pub enum Color {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
-struct ColorCode(u8);
+pub struct ColorCode(u8);
 
 impl ColorCode {
-    fn new(foreground: Color, background: Color) -> ColorCode {
+    pub fn new(foreground: Color, background: Color) -> ColorCode {
         ColorCode((background as u8) << 4 | (foreground as u8))
     }
 }
@@ -134,10 +134,26 @@ macro_rules! println {
     ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
 }
 
+#[macro_export]
+macro_rules! pretty_print {
+    ($color_code:expr, $($arg:tt)*) => ($crate::vga_buffer::_pretty_print($color_code, format_args!($($arg)*)));
+}
+
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
     WRITER.lock().write_fmt(args).unwrap();
+}
+
+#[doc(hidden)]
+pub fn _pretty_print(color_code: ColorCode, args: fmt::Arguments) {
+    use core::fmt::Write;
+    let mut writer = WRITER.lock();
+    let original_color_code = writer.color_code;
+    writer.color_code = color_code;
+    writer.write_fmt(args).unwrap();
+    writer.color_code = original_color_code;
+    drop(writer)
 }
 
 #[test_case]

@@ -5,7 +5,7 @@
 #![reexport_test_harness_main = "test_main"]
 
 use core::panic::PanicInfo;
-use dv_os::println;
+use dv_os::{pretty_print, println, Color, ColorCode};
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
@@ -17,6 +17,34 @@ pub extern "C" fn _start() -> ! {
     println!("I cannot write emoji: {} ! :(", "😭");
     println!();
     println!("I can wrap a very very very very very very very very very very very very very very very long line!");
+    println!();
+
+    let colors = [
+        Color::Black,
+        Color::Blue,
+        Color::Green,
+        Color::Cyan,
+        Color::Red,
+        Color::Magenta,
+        Color::Brown,
+        Color::LightGray,
+        Color::DarkGray,
+        Color::LightBlue,
+        Color::LightGreen,
+        Color::LightCyan,
+        Color::LightRed,
+        Color::Pink,
+        Color::Yellow,
+        Color::White,
+    ];
+
+    println!("I can write in colorful too! :)");
+    for fg in colors.iter() {
+        for bg in colors.iter() {
+            pretty_print!(ColorCode::new(*fg, *bg), " dv ")
+        }
+        println!();
+    }
 
     #[cfg(test)]
     test_main();
