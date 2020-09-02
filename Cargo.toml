@@ -1,0 +1,9 @@
+[package]
+name = "dv_os"
+version = "0.0.1"
+authors = ["Divy Jain <dkj@somaiya.edu>"]
+edition = "2018"
+
+[dependencies]
+bootloader = "0.9.8"
+rlibc = "1.0.0"
