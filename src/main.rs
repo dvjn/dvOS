@@ -63,13 +63,6 @@ pub extern "C" fn _start() -> ! {
             "Interrupt was handled, and it did not crash!"
         );
         println!();
-
-        #[allow(unconditional_recursion)]
-        fn stack_overflow() {
-            stack_overflow();
-            volatile::Volatile::new(0).read();
-        }
-        stack_overflow();
     }
 
     #[cfg(test)]
