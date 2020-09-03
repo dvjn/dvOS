@@ -9,6 +9,8 @@ use dv_os::{pretty_print, println, Color, ColorCode};
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
+    dv_os::init();
+
     let number = 123;
     let float = 1.0 / 2.0;
     let boolean = true;
@@ -49,6 +51,15 @@ pub extern "C" fn _start() -> ! {
         }
         println!();
     }
+    println!();
+
+    x86_64::instructions::interrupts::int3();
+
+    pretty_print!(
+        ColorCode::new(Color::Green, Color::Black),
+        "Interrupt was handled, and it did not crash!"
+    );
+    println!();
 
     #[cfg(test)]
     test_main();
