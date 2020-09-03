@@ -4,7 +4,7 @@ My WIP `Operating System` from scratch in `Rust`.
 
 I'm following this awesome series of blog post tutorials called [Writing an OS in Rust](https://os.phil-opp.com/), while implementing some extra features myself along the way.
 
-## Build Instructions
+## Building
 
 Firstly, you'll need to install [rust](https://www.rust-lang.org/).
 
@@ -30,7 +30,7 @@ And then build the project.
 ❯ cargo build
 ```
 
-## Run Instructions
+## Running
 
 To run the disk image through [QEMU](https://www.qemu.org/), install QEMU, and then run,
 
@@ -46,7 +46,7 @@ To boot it into a real machine, connect an usb drive, and use,
 
 Where `sdX` is location at which the usb drive is located. All the content on this usb drive is overriten.
 
-## Running Tests
+## Testing
 
 To run unit and integrations tests,
 
