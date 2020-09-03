@@ -177,3 +177,16 @@ fn test_println_output() {
         assert_eq!(char::from(screen_char.ascii_character), c);
     }
 }
+
+#[test_case]
+fn test_pretty_print_output() {
+    let s = "Some colorful string";
+    let color_code = ColorCode::new(Color::Green, Color::Yellow);
+    println!();
+    pretty_print!(color_code, "{}", s);
+    s.chars().enumerate().for_each(|(i, c)| {
+        let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 1][i].read();
+        assert_eq!(char::from(screen_char.ascii_character), c);
+        assert_eq!(screen_char.color_code, color_code)
+    })
+}
