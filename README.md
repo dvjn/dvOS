@@ -41,7 +41,7 @@ To run the disk image through [QEMU](https://www.qemu.org/), install QEMU, and t
 To boot it into a real machine, connect an usb drive, and use,
 
 ```shell
-dd if=target/x86_64-dv_os/debug/bootimage-dv_os.bin of=/dev/sdX && sync
+❯ dd if=target/x86_64-dv_os/debug/bootimage-dv_os.bin of=/dev/sdX && sync
 ```
 
 Where `sdX` is location at which the usb drive is located. All the content on this usb drive is overriten.
@@ -51,5 +51,5 @@ Where `sdX` is location at which the usb drive is located. All the content on th
 To run unit and integrations tests,
 
 ```shell
-cargo test
+❯ cargo test
 ```
