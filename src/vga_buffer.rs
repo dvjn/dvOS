@@ -142,18 +142,26 @@ macro_rules! pretty_print {
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    WRITER.lock().write_fmt(args).unwrap();
+    use x86_64::instructions::interrupts;
+
+    interrupts::without_interrupts(|| {
+        WRITER.lock().write_fmt(args).unwrap();
+    });
 }
 
 #[doc(hidden)]
 pub fn _pretty_print(color_code: ColorCode, args: fmt::Arguments) {
     use core::fmt::Write;
-    let mut writer = WRITER.lock();
-    let original_color_code = writer.color_code;
-    writer.color_code = color_code;
-    writer.write_fmt(args).unwrap();
-    writer.color_code = original_color_code;
-    drop(writer)
+    use x86_64::instructions::interrupts;
+
+    interrupts::without_interrupts(|| {
+        let mut writer = WRITER.lock();
+        let original_color_code = writer.color_code;
+        writer.color_code = color_code;
+        writer.write_fmt(args).unwrap();
+        writer.color_code = original_color_code;
+        drop(writer);
+    });
 }
 
 #[test_case]
