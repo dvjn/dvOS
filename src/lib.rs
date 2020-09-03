@@ -15,7 +15,7 @@ pub use vga_buffer::Color;
 pub use vga_buffer::ColorCode;
 
 pub trait Testable {
-    fn run(&self) -> ();
+    fn run(&self);
 }
 
 impl<T> Testable for T

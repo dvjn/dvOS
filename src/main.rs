@@ -9,16 +9,10 @@ use dv_os::{pretty_print, println, Color, ColorCode};
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    println!("Hello World, I can write.");
-    println!();
-    println!("I can write number: {} ! ", 123);
-    println!("I can write float: {} ! ", 1.0 / 2.0);
-    println!("I can write bool: {} ! ", true);
-    println!("I cannot write emoji: {} ! :(", "😭");
-    println!();
-    println!("I can wrap a very very very very very very very very very very very very very very very long line!");
-    println!();
-
+    let number = 123;
+    let float = 1.0 / 2.0;
+    let boolean = true;
+    let emoji = "😭";
     let colors = [
         Color::Black,
         Color::Blue,
@@ -37,6 +31,16 @@ pub extern "C" fn _start() -> ! {
         Color::Yellow,
         Color::White,
     ];
+
+    println!("Hello World, I can write.");
+    println!();
+    println!("I can write number: {} ! ", number);
+    println!("I can write float: {} ! ", float);
+    println!("I can write boolean: {} ! ", boolean);
+    println!("I cannot write emoji: {} ! :(", emoji);
+    println!();
+    println!("I can wrap a very very very very very very very very very very very very very very very long line!");
+    println!();
 
     println!("I can write in colorful too! :)");
     for fg in colors.iter() {
