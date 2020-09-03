@@ -185,6 +185,24 @@ fn test_println_output() {
 }
 
 #[test_case]
+fn test_println_text_wrap() {
+    let s = "Some long line with many characters. Some long line with many characters. Some long line with many characters.";
+    let num_lines = ((s.len() - 1) / BUFFER_WIDTH) as usize + 1;
+    let start_line = BUFFER_HEIGHT - 1 - num_lines;
+    println!("{}", s);
+    s.chars().enumerate().for_each(|(i, c)| {
+        assert_eq!(
+            char::from(
+                WRITER.lock().buffer.chars[start_line + (i / BUFFER_WIDTH)][i % BUFFER_WIDTH]
+                    .read()
+                    .ascii_character
+            ),
+            c
+        );
+    });
+}
+
+#[test_case]
 fn test_pretty_print_output() {
     let s = "Some colorful string";
     let color_code = ColorCode::new(Color::Green, Color::Yellow);
