@@ -1,6 +1,8 @@
 # dvOS
 
-My try to implement an `Operating System` from scratch in `Rust`
+My WIP `Operating System` from scratch in `Rust`.
+
+I'm following this awesome series of blog post tutorials called [Writing an OS in Rust](https://os.phil-opp.com/), while implementing some extra features myself along the way.
 
 ## Build Instructions
 
