@@ -10,7 +10,7 @@ Firstly, you'll need to install [rust](https://www.rust-lang.org/).
 ❯ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
-Then install rust nightly trough rustup.
+Then install rust nightly through rustup.
 
 ```shell
 ❯ rustup update nightly --force
