@@ -24,6 +24,12 @@ pub fn init_test_idt() {
     TEST_IDT.load();
 }
 
+#[allow(unconditional_recursion)]
+fn stack_overflow() {
+    stack_overflow();
+    volatile::Volatile::new(0).read();
+}
+
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     serial_print!("stack_overflow::stack_overflow...\t");
@@ -34,12 +40,6 @@ pub extern "C" fn _start() -> ! {
     stack_overflow();
 
     panic!("Execution continued after stack overflow");
-}
-
-#[allow(unconditional_recursion)]
-fn stack_overflow() {
-    stack_overflow();
-    volatile::Volatile::new(0).read();
 }
 
 extern "x86-interrupt" fn test_double_fault_handler(

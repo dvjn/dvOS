@@ -12,12 +12,19 @@ pub extern "C" fn _start() -> ! {
 
     #[cfg(not(test))]
     {
-        use dv_os::{pretty_print, println, Color, ColorCode};
+        use dv_os::{color_code, colored_print, println, Color};
 
         let number = 123;
         let float = 1.0 / 2.0;
         let boolean = true;
         let emoji = "😭";
+
+        println!("Hello World, I can write evrything!");
+        println!(
+            "Integer: {}, Float: {}, Boolean: {}, Unknown: {}",
+            number, float, boolean, emoji
+        );
+
         let colors = [
             Color::Black,
             Color::Blue,
@@ -37,29 +44,19 @@ pub extern "C" fn _start() -> ! {
             Color::White,
         ];
 
-        println!("Hello World, I can write.");
-        println!();
-        println!("I can write number: {} ! ", number);
-        println!("I can write float: {} ! ", float);
-        println!("I can write boolean: {} ! ", boolean);
-        println!("I cannot write emoji: {} ! :(", emoji);
-        println!();
-        println!("I can wrap a very very very very very very very very very very very very very very very long line!");
-        println!();
-
         println!("I can write in colorful too! :)");
         for fg in colors.iter() {
             for bg in colors.iter() {
-                pretty_print!(ColorCode::new(*fg, *bg), " dv ")
+                colored_print!(color_code!(*fg, *bg), " dv ")
             }
             println!();
         }
         println!();
 
+        println!("And here comes a breakpoint interrupt...");
         x86_64::instructions::interrupts::int3();
-
-        pretty_print!(
-            ColorCode::new(Color::Green, Color::Black),
+        colored_print!(
+            color_code!(Color::Green),
             "Interrupt was handled, and it did not crash!"
         );
         println!();

@@ -1,3 +1,8 @@
+use core::fmt;
+use lazy_static::lazy_static;
+use spin::Mutex;
+use volatile::Volatile;
+
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
@@ -20,6 +25,9 @@ pub enum Color {
     White = 15,
 }
 
+pub const DEFAULT_FOREGROUND_COLOR: Color = Color::White;
+pub const DEFAULT_BACKGROUND_COLOR: Color = Color::Black;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct ColorCode(u8);
@@ -28,6 +36,22 @@ impl ColorCode {
     pub fn new(foreground: Color, background: Color) -> ColorCode {
         ColorCode((background as u8) << 4 | (foreground as u8))
     }
+}
+
+#[macro_export]
+macro_rules! color_code {
+    () => {
+        $crate::vga_buffer::ColorCode::new(
+            $crate::vga_buffer::DEFAULT_FOREGROUND_COLOR,
+            $crate::vga_buffer::DEFAULT_BACKGROUND_COLOR,
+        )
+    };
+    ($fg:expr) => {
+        $crate::vga_buffer::ColorCode::new($fg, $crate::vga_buffer::DEFAULT_BACKGROUND_COLOR)
+    };
+    ($fg:expr, $bg:expr) => {
+        $crate::vga_buffer::ColorCode::new($fg, $bg)
+    };
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -39,8 +63,6 @@ struct ScreenChar {
 
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
-
-use volatile::Volatile;
 
 struct Buffer {
     chars: [[Volatile<ScreenChar>; BUFFER_WIDTH]; BUFFER_HEIGHT],
@@ -103,8 +125,6 @@ impl Writer {
     }
 }
 
-use core::fmt;
-
 impl fmt::Write for Writer {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         self.write_string(s);
@@ -112,14 +132,24 @@ impl fmt::Write for Writer {
     }
 }
 
-use lazy_static::lazy_static;
-use spin::Mutex;
-
 lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_position: 0,
-        color_code: ColorCode::new(Color::White, Color::Black),
+        color_code: color_code!(),
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+    });
+}
+
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments) {
+    use core::fmt::Write;
+    use x86_64::instructions::interrupts;
+
+    interrupts::without_interrupts(|| {
+        WRITER
+            .lock()
+            .write_fmt(args)
+            .expect("Printing to vga failed");
     });
 }
 
@@ -134,23 +164,8 @@ macro_rules! println {
     ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
 }
 
-#[macro_export]
-macro_rules! pretty_print {
-    ($color_code:expr, $($arg:tt)*) => ($crate::vga_buffer::_pretty_print($color_code, format_args!($($arg)*)));
-}
-
 #[doc(hidden)]
-pub fn _print(args: fmt::Arguments) {
-    use core::fmt::Write;
-    use x86_64::instructions::interrupts;
-
-    interrupts::without_interrupts(|| {
-        WRITER.lock().write_fmt(args).unwrap();
-    });
-}
-
-#[doc(hidden)]
-pub fn _pretty_print(color_code: ColorCode, args: fmt::Arguments) {
+pub fn _colored_print(color_code: ColorCode, args: fmt::Arguments) {
     use core::fmt::Write;
     use x86_64::instructions::interrupts;
 
@@ -158,10 +173,15 @@ pub fn _pretty_print(color_code: ColorCode, args: fmt::Arguments) {
         let mut writer = WRITER.lock();
         let original_color_code = writer.color_code;
         writer.color_code = color_code;
-        writer.write_fmt(args).unwrap();
+        writer.write_fmt(args).expect("Printing to vga failed");
         writer.color_code = original_color_code;
         drop(writer);
     });
+}
+
+#[macro_export]
+macro_rules! colored_print {
+    ($color_code:expr, $($arg:tt)*) => ($crate::vga_buffer::_colored_print($color_code, format_args!($($arg)*)));
 }
 
 #[test_case]
@@ -219,14 +239,15 @@ fn test_println_text_wrap() {
 }
 
 #[test_case]
-fn test_pretty_print_output() {
+fn test_colored_print_output() {
     use x86_64::instructions::interrupts;
 
     let s = "Some colorful string";
-    let color_code = ColorCode::new(Color::Green, Color::Yellow);
+    let color_code = color_code!(Color::Green, Color::Yellow);
+
     interrupts::without_interrupts(|| {
         println!();
-        pretty_print!(color_code, "{}", s);
+        colored_print!(color_code, "{}", s);
         s.chars().enumerate().for_each(|(i, c)| {
             let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 1][i].read();
             assert_eq!(char::from(screen_char.ascii_character), c);

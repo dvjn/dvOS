@@ -1,4 +1,4 @@
-use crate::{gdt, pretty_print, print, println, Color, ColorCode};
+use crate::{colored_print, gdt, print, println, Color, ColorCode};
 use lazy_static::lazy_static;
 use pic8259_simple::ChainedPics;
 use spin::Mutex;
@@ -47,7 +47,7 @@ pub fn init_idt() {
 }
 
 extern "x86-interrupt" fn breakpoint_handler(stack_frame: &mut InterruptStackFrame) {
-    pretty_print!(
+    colored_print!(
         ColorCode::new(Color::Red, Color::Black),
         "EXCEPTION: BREAKPOINT\n{:#?}",
         stack_frame
