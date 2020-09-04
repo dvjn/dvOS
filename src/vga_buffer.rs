@@ -178,47 +178,59 @@ fn test_println_many() {
 
 #[test_case]
 fn test_println_output() {
-    let s = "Some test string that fits on a single line";
-    println!("{}", s);
-    s.chars().enumerate().for_each(|(i, c)| {
-        assert_eq!(
-            char::from(
-                WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i]
-                    .read()
-                    .ascii_character
-            ),
-            c
-        );
+    use x86_64::instructions::interrupts;
+
+    interrupts::without_interrupts(|| {
+        let s = "Some test string that fits on a single line";
+        println!("\n{}", s);
+        s.chars().enumerate().for_each(|(i, c)| {
+            assert_eq!(
+                char::from(
+                    WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i]
+                        .read()
+                        .ascii_character
+                ),
+                c
+            );
+        });
     });
 }
 
 #[test_case]
 fn test_println_text_wrap() {
+    use x86_64::instructions::interrupts;
+
     let s = "Some long line with many characters. Some long line with many characters. Some long line with many characters.";
     let num_lines = ((s.len() - 1) / BUFFER_WIDTH) as usize + 1;
     let start_line = BUFFER_HEIGHT - 1 - num_lines;
-    println!("{}", s);
-    s.chars().enumerate().for_each(|(i, c)| {
-        assert_eq!(
-            char::from(
-                WRITER.lock().buffer.chars[start_line + (i / BUFFER_WIDTH)][i % BUFFER_WIDTH]
-                    .read()
-                    .ascii_character
-            ),
-            c
-        );
+    interrupts::without_interrupts(|| {
+        println!("\n{}", s);
+        s.chars().enumerate().for_each(|(i, c)| {
+            assert_eq!(
+                char::from(
+                    WRITER.lock().buffer.chars[start_line + (i / BUFFER_WIDTH)][i % BUFFER_WIDTH]
+                        .read()
+                        .ascii_character
+                ),
+                c
+            );
+        });
     });
 }
 
 #[test_case]
 fn test_pretty_print_output() {
+    use x86_64::instructions::interrupts;
+
     let s = "Some colorful string";
     let color_code = ColorCode::new(Color::Green, Color::Yellow);
-    println!();
-    pretty_print!(color_code, "{}", s);
-    s.chars().enumerate().for_each(|(i, c)| {
-        let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 1][i].read();
-        assert_eq!(char::from(screen_char.ascii_character), c);
-        assert_eq!(screen_char.color_code, color_code)
-    })
+    interrupts::without_interrupts(|| {
+        println!();
+        pretty_print!(color_code, "{}", s);
+        s.chars().enumerate().for_each(|(i, c)| {
+            let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 1][i].read();
+            assert_eq!(char::from(screen_char.ascii_character), c);
+            assert_eq!(screen_char.color_code, color_code)
+        });
+    });
 }
