@@ -68,7 +68,7 @@ pub extern "C" fn _start() -> ! {
     #[cfg(test)]
     test_main();
 
-    loop {}
+    dv_os::hlt_loop();
 }
 
 #[cfg(not(test))]
@@ -77,7 +77,7 @@ fn panic(info: &PanicInfo) -> ! {
     use dv_os::println;
 
     println!("{}", info);
-    loop {}
+    dv_os::hlt_loop();
 }
 
 #[cfg(test)]
