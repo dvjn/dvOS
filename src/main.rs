@@ -4,15 +4,20 @@
 #![test_runner(dv_os::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
 
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+entry_point!(kernel_main);
+
+fn kernel_main(boot_info: &'static BootInfo) -> ! {
     dv_os::init();
 
     #[cfg(not(test))]
     {
-        use dv_os::{color_code, colored_print, println, Color};
+        use dv_os::{
+            color_code, colored_print, memory, memory::BootInfoFrameAllocator, println, Color,
+        };
+        use x86_64::{structures::paging::Page, VirtAddr};
 
         let number = 123;
         let float = 1.0 / 2.0;
@@ -60,6 +65,16 @@ pub extern "C" fn _start() -> ! {
             "Interrupt was handled, and it did not crash!"
         );
         println!();
+
+        let mut mapper = unsafe { memory::init(VirtAddr::new(boot_info.physical_memory_offset)) };
+        let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
+
+        let page = Page::containing_address(VirtAddr::new(0xdeadbeef000));
+        memory::create_vga_buffer_mapping(page, &mut mapper, &mut frame_allocator);
+
+        let page_ptr: *mut u64 = page.start_address().as_mut_ptr();
+        println!();
+        unsafe { page_ptr.offset(460).write_volatile(0x_f121_f177_f165_f14e) };
     }
 
     #[cfg(test)]
