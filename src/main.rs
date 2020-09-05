@@ -4,6 +4,9 @@
 #![test_runner(dv_os::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+extern crate alloc;
+
+use alloc::boxed::Box;
 use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
 
@@ -75,6 +78,8 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         let page_ptr: *mut u64 = page.start_address().as_mut_ptr();
         println!();
         unsafe { page_ptr.offset(460).write_volatile(0x_f121_f177_f165_f14e) };
+
+        let _x = Box::new(69);
     }
 
     #[cfg(test)]
