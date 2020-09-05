@@ -18,9 +18,10 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     #[cfg(not(test))]
     {
         use dv_os::{
-            color_code, colored_print, memory, memory::BootInfoFrameAllocator, println, Color,
+            allocator, color_code, colored_print, memory, memory::BootInfoFrameAllocator, println,
+            Color,
         };
-        use x86_64::{structures::paging::Page, VirtAddr};
+        use x86_64::VirtAddr;
 
         let number = 123;
         let float = 1.0 / 2.0;
@@ -69,15 +70,12 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         );
         println!();
 
-        let mut mapper = unsafe { memory::init(VirtAddr::new(boot_info.physical_memory_offset)) };
+        let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
+        let mut mapper = unsafe { memory::init(phys_mem_offset) };
         let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
 
-        let page = Page::containing_address(VirtAddr::new(0xdeadbeef000));
-        memory::create_vga_buffer_mapping(page, &mut mapper, &mut frame_allocator);
-
-        let page_ptr: *mut u64 = page.start_address().as_mut_ptr();
-        println!();
-        unsafe { page_ptr.offset(460).write_volatile(0x_f121_f177_f165_f14e) };
+        allocator::init_heap(&mut mapper, &mut frame_allocator)
+            .expect("heap initialization failed");
 
         let _x = Box::new(69);
     }
