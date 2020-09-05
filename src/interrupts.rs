@@ -1,8 +1,8 @@
-use crate::{colored_print, gdt, print, println, Color, ColorCode};
+use crate::{color_code, colored_print, gdt, hlt_loop, print, println, Color};
 use lazy_static::lazy_static;
 use pic8259_simple::ChainedPics;
 use spin::Mutex;
-use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
+use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode};
 
 pub const PIC_1_OFFSET: u8 = 32;
 pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
@@ -38,6 +38,7 @@ lazy_static! {
         }
         idt[InterruptIndex::Timer.as_usize()].set_handler_fn(timer_interrupt_handler);
         idt[InterruptIndex::Keyboard.as_usize()].set_handler_fn(keyboard_interrupt_handler);
+        idt.page_fault.set_handler_fn(page_fault_handler);
         idt
     };
 }
@@ -48,7 +49,7 @@ pub fn init_idt() {
 
 extern "x86-interrupt" fn breakpoint_handler(stack_frame: &mut InterruptStackFrame) {
     colored_print!(
-        ColorCode::new(Color::Red, Color::Black),
+        color_code!(Color::Red),
         "EXCEPTION: BREAKPOINT\n{:#?}",
         stack_frame
     );
@@ -98,6 +99,25 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: &mut Interrup
         PICS.lock()
             .notify_end_of_interrupt(InterruptIndex::Keyboard.as_u8());
     }
+}
+
+extern "x86-interrupt" fn page_fault_handler(
+    stack_frame: &mut InterruptStackFrame,
+    error_code: PageFaultErrorCode,
+) {
+    use x86_64::registers::control::Cr2;
+
+    colored_print!(
+        color_code!(Color::Red),
+        "EXCEPTION: PAGE FAULT\n\
+        Accessed Address: {:?}\n\
+        Error Code: {:?}\n\
+        {:#?}\n",
+        Cr2::read(),
+        error_code,
+        stack_frame
+    );
+    hlt_loop();
 }
 
 #[test_case]
