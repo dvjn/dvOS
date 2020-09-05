@@ -6,7 +6,6 @@
 
 extern crate alloc;
 
-use alloc::boxed::Box;
 use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
 
@@ -17,6 +16,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     #[cfg(not(test))]
     {
+        use alloc::{boxed::Box, rc::Rc, vec::Vec};
         use dv_os::{
             allocator, color_code, colored_print, memory, memory::BootInfoFrameAllocator, println,
             Color,
@@ -77,7 +77,30 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         allocator::init_heap(&mut mapper, &mut frame_allocator)
             .expect("heap initialization failed");
 
-        let _x = Box::new(69);
+        let heap_value = Box::new(69);
+        println!("heap_value at {:p}", heap_value);
+
+        let mut heap_vector = Vec::new();
+        for i in 0..500 {
+            if i % 50 == 0 {
+                println!(
+                    "with {:0>3} values, heap_vector at {:p}",
+                    i,
+                    heap_vector.as_slice(),
+                );
+            }
+            heap_vector.push(i);
+        }
+        println!(
+            "with 500 values, heap_vector at {:p}",
+            heap_vector.as_slice()
+        );
+
+        let reference_counted = Rc::new(heap_vector);
+        let cloned_reference = reference_counted.clone();
+        println!("Ref count is {}", Rc::strong_count(&cloned_reference));
+        core::mem::drop(reference_counted);
+        println!("New ref count is {}", Rc::strong_count(&cloned_reference));
     }
 
     #[cfg(test)]
