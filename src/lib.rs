@@ -3,6 +3,7 @@
 #![feature(abi_x86_interrupt)]
 #![feature(custom_test_frameworks)]
 #![feature(alloc_error_handler)]
+#![feature(const_fn)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
