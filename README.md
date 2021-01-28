@@ -1,55 +1,81 @@
 # dvOS
 
-My WIP `Operating System` from scratch in `Rust`.
+Learning what goes into making an operating system 🤯
+<br />
+Also, I just wanted to practice rust 🤷🏻
 
-I'm following this awesome series of blog post tutorials called [Writing an OS in Rust](https://os.phil-opp.com/), while implementing some extra features myself along the way.
+## How To
 
-## Building
+<details>
+<summary><b>📦 Build</b></summary>
 
-Firstly, you'll need to install [rust](https://www.rust-lang.org/).
+- **Install rust nightly**
 
-```shell
-❯ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-```
+  ```shell
+  $ rustup update nightly --force
+  ```
 
-Then install rust nightly through rustup.
+- **Set nightly as default**
 
-```shell
-❯ rustup update nightly --force
-```
+  ```shell
+  $ rustup override set nightly
+  ```
 
-To create a bootable image, install bootimage.
+- **Install bootimage**
 
-```shell
-❯ cargo install bootimage
-```
+  ```shell
+  $ cargo install bootimage
+  ```
 
-And then build the project.
+- **Build the project**
 
-```shell
-❯ cargo build
-```
+  ```shell
+  $ cargo build
+  ```
 
-## Running
+</details>
 
-To run the disk image through [QEMU](https://www.qemu.org/), install QEMU, and then run,
+<details>
+<summary><b>💻 Run</b></summary>
 
-```shell
-❯ cargo run
-```
+- **Run on [QEMU](https://www.qemu.org/)**
 
-To boot it into a real machine, connect an usb drive, and use,
+  ```shell
+  $ cargo run
+  ```
 
-```shell
-❯ dd if=target/x86_64-dv_os/debug/bootimage-dv_os.bin of=/dev/sdX && sync
-```
+- **Run on Real Machine**
 
-Where `sdX` is location at which the usb drive is located. All the content on this usb drive is overriten.
+  Build the project
 
-## Testing
+  ```shell
+  $ cargo build
+  ```
 
-To run unit and integrations tests,
+  Connect an USB drive, and run
 
-```shell
-❯ cargo test
-```
+  ```shell
+  $ dd if=target/x86_64-dv_os/release/bootimage-dv_os.bin of=/dev/sdX && sync
+  ```
+
+  Replace `sdX` with the location of the usb drive.
+  Use this usb as bootable drive in the machine.
+
+  **Note:** All the data in the usb drive will be overwritten.
+
+</details>
+
+<details>
+<summary><b>✅ Test</b></summary>
+
+- **Run tests**
+
+  ```shell
+  $ cargo test
+  ```
+
+</details>
+
+## References
+
+Source of Learning: [Writing an OS in Rust](https://os.phil-opp.com/)
