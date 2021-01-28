@@ -28,6 +28,15 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
             .expect("heap initialization failed");
     }
 
+    // Initialize task executor
+    let mut executor = {
+        use dv_os::task::{executor::Executor, keyboard, Task};
+
+        let mut executor = Executor::new();
+        executor.spawn(Task::new(keyboard::print_keypresses()));
+        executor
+    };
+
     // Playing with print macro
     {
         use dv_os::println;
@@ -123,13 +132,10 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     // Playing with task executor
     {
-        use dv_os::{
-            println,
-            task::{executor::Executor, keyboard, Task},
-        };
+        use dv_os::{println, task::Task};
 
         async fn async_number() -> u32 {
-            42
+            420
         }
 
         async fn example_task() {
@@ -137,14 +143,11 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
             println!("async number: {}", number);
         }
 
-        let mut executor = Executor::new();
         executor.spawn(Task::new(example_task()));
-        executor.spawn(Task::new(keyboard::print_keypresses()));
-        executor.run();
     }
 
-    // End with loop of halt instructions
-    dv_os::hlt_loop();
+    // Running the task executor.
+    executor.run();
 }
 
 #[cfg(test)]
