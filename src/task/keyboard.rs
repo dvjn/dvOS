@@ -52,7 +52,7 @@ impl Stream for ScancodeStream {
 
 pub(crate) fn add_scancode(scancode: u8) {
     if let Ok(queue) = SCANCODE_QUEUE.try_get() {
-        if let Err(_) = queue.push(scancode) {
+        if queue.push(scancode).is_err() {
             println!("WARNING: scancode queue full; dropping keyboard input");
         } else {
             WAKER.wake();
